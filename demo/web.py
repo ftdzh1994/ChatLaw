@@ -24,7 +24,6 @@ def main(
         model,
         torch_dtype=torch.float16,
         device_map="auto",
-        device="cuda",
     )
 
     model = PeftModel.from_pretrained(model, chatlaw_model_path)
@@ -46,6 +45,7 @@ def main(
     ):
         prompt = make_prompt(references, consult)
         inputs = tokenizer(prompt, return_tensors="pt")
+        inputs= inputs.to(model.device)
         # inputs['input_ids'] = inputs['input_ids'].to(model.device)
         generation_config = GenerationConfig(
             do_sample=True,
