@@ -36,11 +36,11 @@ def main(
     def evaluate(
         references,
         consult,
-        temperature=0.1,
+        temperature=0.75,
         top_p=0.75,
-        top_k=40,
-        num_beams=4,
-        max_new_tokens=128,
+        top_k=5,
+        num_beams=1,
+        max_new_tokens=1024,
         **kwargs,
     ):
         prompt = make_prompt(references, consult)
@@ -72,8 +72,10 @@ def main(
         print(s)
         output = tokenizer.decode(s)
         print(output)
-        if search_result := re.search("Response\s*:\s*([\s\S]+?)</s>", output):
-            return search_result.group(1)
+        if output:
+            return output
+        # if search_result := re.search("Response\s*:\s*([\s\S]+?)</s>", output):
+        #     return search_result.group(1)
         return "Error! Maybe response is over length."
 
     gr.Interface(
@@ -102,7 +104,7 @@ def main(
                 minimum=1, maximum=4, step=1, value=1, label="Beams"
             ),
             gr.components.Slider(
-                minimum=1, maximum=1024, step=1, value=1024, label="Max tokens"
+                minimum=1, maximum=4096, step=1, value=4096, label="Max tokens"
             ),
         ],
         outputs = [
