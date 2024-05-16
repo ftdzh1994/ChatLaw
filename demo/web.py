@@ -1,5 +1,6 @@
 import fire
 from transformers import GenerationConfig, LlamaForCausalLM, LlamaTokenizer
+from peft import PeftModel
 import gradio as gr
 import torch
 import re
@@ -13,15 +14,19 @@ def make_prompt(
     return prompt
 
 def main(
-    model: str = "JessyTsu1/ChatLaw-13B",
+    model: str = "/root/zq/models/Anima33B-merged",
 ):
 
-    tokenizer = LlamaTokenizer.from_pretrained(model)
+    chatlaw_model_path = "/root/zq/models/ChatLaw-33B" # chatlaw模型权重, peft权重
+    tokenizer = LlamaTokenizer.from_pretrained(model)  # basr model
+    # base model
     model = LlamaForCausalLM.from_pretrained(
         model,
         torch_dtype=torch.float16,
         device_map="auto",
     )
+
+    model = PeftModel.from_pretrained(model, chatlaw_model_path)
         
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.unk_token
@@ -101,7 +106,7 @@ def main(
         ],
         title="ChatLaw Academic Demo",
         description="",
-    ).queue().launch(server_name="0.0.0.0",server_port=1234)
+    ).queue().launch(server_name="0.0.0.0",server_port=8100)
 
 
 if __name__ == "__main__":
