@@ -46,9 +46,9 @@ def main(
     ):
         prompt = make_prompt(references, consult)
         inputs = tokenizer(prompt, return_tensors="pt")
-        inputs = inputs.to(model.device) # 将输入数据移动到模型所在设备
         # inputs['input_ids'] = inputs['input_ids'].to(model.device)
         generation_config = GenerationConfig(
+            do_sample=True,
             temperature=temperature,
             top_p=top_p,
             top_k=top_k,
@@ -57,7 +57,8 @@ def main(
         )
         
         with torch.no_grad():
-            generation_output = model.generate(
+            try:
+                generation_output = model.generate(
                 **inputs,
                 generation_config=generation_config,
                 return_dict_in_generate=True,
@@ -65,8 +66,12 @@ def main(
                 max_new_tokens=max_new_tokens,
                 repetition_penalty=1.2,
             )
+            except Exception as e:
+                return f"Error! {e}"
         s = generation_output.sequences[0]
+        print(s)
         output = tokenizer.decode(s)
+        print(output)
         if search_result := re.search("Response\s*:\s*([\s\S]+?)</s>", output):
             return search_result.group(1)
         return "Error! Maybe response is over length."
